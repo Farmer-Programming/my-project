@@ -5,7 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>统计系统</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 引入 Manifest 文件 -->
+<link rel="manifest" href="manifest.json">
+
+<!-- 设置主题颜色（影响浏览器地址栏颜色） -->
+<meta name="theme-color" content="#317EFB">
+
+<!-- 设置为移动设备友好 -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- 可选：设置为全屏显示 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
   <style>
+    
     /* ==================== 基础重置与字体控制 ==================== */
     body {
       font-family: 'Arial', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB',
@@ -238,7 +252,7 @@
   </style>
 </head>
 <body>
-
+  <button id="installBtn" style="display:none;">📲 安装应用</button>
 <div class="chart-container">
   <canvas id="trendChart"></canvas>
 </div>
@@ -300,6 +314,8 @@
     </tbody>
   </table>
 </div>
+
+
 
 <script src="script.js"></script>
 </body>

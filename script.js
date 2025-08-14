@@ -1051,3 +1051,44 @@ document.getElementById("temporaryView")?.addEventListener("click", () => {
 
   deleteData();
 });
+// script.js 文件注册
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(registration => {
+        console.log('✅ Service Worker 注册成功:', registration);
+      })
+      .catch(error => {
+        console.log('❌ Service Worker 注册失败:', error);
+      });
+  });
+}
+
+// 其他初始化代码...
+
+// 👇 安装提示逻辑开始
+
+document.addEventListener('DOMContentLoaded', () => {
+  const installBtn = document.getElementById('installBtn');
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-block';
+  });
+
+  installBtn.addEventListener('click', () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('✅ 用户接受安装');
+        installBtn.textContent = '✅ 已安装';
+      } else {
+        console.log('❌ 用户拒绝安装');
+      }
+      deferredPrompt = null;
+    });
+  });
+});
