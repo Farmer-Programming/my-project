@@ -137,84 +137,84 @@
     </div>
 
     <!-- 使用纯全局脚本，彻底避免模块作用域问题 -->
-    <script>
-        // ========== 初始化 Supabase ==========
-        const supabase = supabase.createClient(
-            'https://gboujpgswtpyftlakvsm.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdib3VqcGdzd3RweWZ0bGFrdnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjU4MjYsImV4cCI6MjA3Mzg0MTgyNn0.JacF3xi3xzqThgBCk7xVlKGVipBPiDCIbVgA5GZB7Zs'
-        );
+<script>
+    // ========== 第一步：立即初始化 Supabase ==========
+    const supabase = supabase.createClient(
+        'https://gboujpgswtpyftlakvsm.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdib3VqcGdzd3RweWZ0bGFrdnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjU4MjYsImV4cCI6MjA3Mzg0MTgyNn0.JacF3xi3xzqThgBCk7xVlKGVipBPiDCIbVgA5GZB7Zs'
+    );
 
-        // ========== 表单切换函数 ==========
-        function showLoginForm() {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('register-form').style.display = 'none';
-            document.getElementById('subscription-plans').style.display = 'none';
-        }
+    // ========== 第二步：定义所有辅助函数 ==========
+    function showLoginForm() {
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('subscription-plans').style.display = 'none';
+    }
 
-        function showRegisterForm() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'block';
-            document.getElementById('subscription-plans').style.display = 'none';
-        }
+    function showRegisterForm() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-form').style.display = 'block';
+        document.getElementById('subscription-plans').style.display = 'none';
+    }
 
-        // ========== 事件监听器（代替 onclick）==========
-        document.addEventListener('DOMContentLoaded', function() {
-            // 登录按钮
-            document.getElementById('login-btn').addEventListener('click', async function() {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
+    // ========== 第三步：在 DOM 加载完成后绑定事件 ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        // 登录按钮
+        document.getElementById('login-btn').addEventListener('click', async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password
-                });
-
-                if (error) {
-                    alert('登录失败: ' + error.message);
-                } else {
-                    alert('登录成功！');
-                    window.location.href = 'index.html';
-                }
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
             });
 
-            // 注册按钮
-            document.getElementById('register-btn').addEventListener('click', async function() {
-                const email = document.getElementById('reg-email').value;
-                const password = document.getElementById('reg-password').value;
-
-                if (password.length < 6) {
-                    alert('密码至少需要6位');
-                    return;
-                }
-
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password
-                });
-
-                if (error) {
-                    alert('注册失败: ' + error.message);
-                } else {
-                    alert('注册成功！请查收邮箱验证邮件，然后登录。');
-                    showLoginForm();
-                }
-            });
-
-            // 切换到注册表单
-            document.getElementById('to-register').addEventListener('click', function() {
-                showRegisterForm();
-            });
-
-            // 切换到登录表单
-            document.getElementById('to-login').addEventListener('click', function() {
-                showLoginForm();
-            });
-
-            // 升级按钮
-            document.getElementById('upgrade-btn').addEventListener('click', function() {
-                alert('支付功能将在下一步接入！');
-            });
+            if (error) {
+                alert('登录失败: ' + error.message);
+            } else {
+                alert('登录成功！');
+                window.location.href = 'index.html';
+            }
         });
-    </script>
+
+        // 注册按钮
+        document.getElementById('register-btn').addEventListener('click', async function() {
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            if (password.length < 6) {
+                alert('密码至少需要6位');
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password
+            });
+
+            if (error) {
+                alert('注册失败: ' + error.message);
+            } else {
+                alert('注册成功！请查收邮箱验证邮件，然后登录。');
+                showLoginForm();
+            }
+        });
+
+        // 切换到注册表单
+        document.getElementById('to-register').addEventListener('click', function() {
+            showRegisterForm();
+        });
+
+        // 切换到登录表单
+        document.getElementById('to-login').addEventListener('click', function() {
+            showLoginForm();
+        });
+
+        // 升级按钮
+        document.getElementById('upgrade-btn').addEventListener('click', function() {
+            alert('支付功能将在下一步接入！');
+        });
+    });
+</script>
 </body>
 </html>
