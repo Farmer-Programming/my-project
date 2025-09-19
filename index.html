@@ -15,6 +15,39 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="stylesheet" href="style.css">
 </head>
+
+<!-- 自救脚本：确保登录后显示主应用 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
+<script>
+    // 初始化 Supabase
+    const supabase = supabase.createClient(
+        'https://gboujpgswtpyftlakvsm.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdib3VqcGdzd3RweWZ0bGFrdnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjU4MjYsImV4cCI6MjA3Mzg0MTgyNn0.JacF3xi3xzqThgBCk7xVlKGVipBPiDCIbVgA5GZB7Zs'
+    );
+
+    // 检查登录状态并显示主应用
+    async function checkAuthAndShowApp() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                console.log('✅ 用户已登录，显示主应用');
+                document.getElementById('main-app').style.display = 'block';
+            } else {
+                console.log('⚠️ 用户未登录，跳转到登录页');
+                window.location.href = 'login.html';
+            }
+        } catch (error) {
+            console.error('❌ 检查登录状态失败:', error);
+            window.location.href = 'login.html';
+        }
+    }
+
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(checkAuthAndShowApp, 1000); // 延迟1秒，确保DOM加载完成
+    });
+</script>
+
 <body>
     <!-- 安装按钮 -->
     <button id="installBtn" style="display:none;">📲 安装应用</button>
