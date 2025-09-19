@@ -139,12 +139,12 @@
     <!-- 使用纯全局脚本，彻底避免模块作用域问题 -->
 <script>
     // ========== 第一步：立即初始化 Supabase ==========
-    const supabase = supabase.createClient(
+    const _supabaseClient = supabase.createClient(
         'https://gboujpgswtpyftlakvsm.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdib3VqcGdzd3RweWZ0bGFrdnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjU4MjYsImV4cCI6MjA3Mzg0MTgyNn0.JacF3xi3xzqThgBCk7xVlKGVipBPiDCIbVgA5GZB7Zs'
     );
 
-    // ========== 第二步：定义所有辅助函数 ==========
+    // ========== 第二步：定义所有函数 ==========
     function showLoginForm() {
         document.getElementById('login-form').style.display = 'block';
         document.getElementById('register-form').style.display = 'none';
@@ -157,14 +157,14 @@
         document.getElementById('subscription-plans').style.display = 'none';
     }
 
-    // ========== 第三步：在 DOM 加载完成后绑定事件 ==========
+    // ========== 第三步：在 DOM 加载完成后绑定所有事件 ==========
     document.addEventListener('DOMContentLoaded', function() {
         // 登录按钮
         document.getElementById('login-btn').addEventListener('click', async function() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await _supabaseClient.auth.signInWithPassword({
                 email,
                 password
             });
@@ -187,7 +187,7 @@
                 return;
             }
 
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error } = await _supabaseClient.auth.signUp({
                 email,
                 password
             });
