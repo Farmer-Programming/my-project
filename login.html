@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>烟尘道统计分析系统 - 登录</title>
+    <!-- 从 CDN 加载 Supabase，解决模块解析错误 -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -134,9 +136,15 @@
         </div>
     </div>
 
-    <script type="module">
-        import { supabase } from './supabase-config.js';
+    <!-- 使用全局脚本，确保所有函数在全局作用域可用 -->
+    <script>
+        // 初始化 Supabase 客户端（使用你的项目信息）
+        const supabase = supabase.createClient(
+            'https://gboujpgswtpyftlakvsm.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdib3VqcGdzd3RweWZ0bGFrdnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjU4MjYsImV4cCI6MjA3Mzg0MTgyNn0.JacF3xi3xzqThgBCk7xVlKGVipBPiDCIbVgA5GZB7Zs'
+        );
 
+        // ========== 表单切换函数 ==========
         function showLoginForm() {
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('register-form').style.display = 'none';
@@ -155,6 +163,7 @@
             document.getElementById('subscription-plans').style.display = 'block';
         }
 
+        // ========== 登录/注册函数 ==========
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -168,7 +177,7 @@
                 alert('登录失败: ' + error.message);
             } else {
                 alert('登录成功！');
-                window.location.href = 'index.html'; // 假设你的主页面是 index.html
+                window.location.href = 'index.html'; // 跳转到主应用
             }
         }
 
@@ -193,7 +202,6 @@
                 showLoginForm();
             }
         }
-
     </script>
 </body>
 </html>
