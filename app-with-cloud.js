@@ -1,3 +1,10 @@
+// app-with-cloud.js
+import { supabase } from './supabase-config.js';
+
+// ========== 你的原有900行核心算法代码 ==========
+// ... (这里是你原有的所有计算逻辑和UI更新代码)
+// 我们假设你有一个全局对象 `window.myApp` 或类似结构
+// ========== 你的原有900行核心算法代码 ==========
 document.addEventListener("DOMContentLoaded", () => {
   const ledgerBody = document.querySelector(".ledger tbody");
   const chartCanvas = document.getElementById("trendChart");
@@ -1092,3 +1099,204 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// ========== 新增：授权与云端集成 ==========
+class CloudManager {
+    constructor() {
+        this.currentUser = null;
+        this.currentLicense = null;
+        this.isInitialized = false;
+    }
+
+    // 初始化：检查登录状态
+    async init() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            this.currentUser = user;
+            await this.loadUserLicense();
+            console.log('✅ 用户已登录:', user.email);
+            this.isInitialized = true;
+            this.onAuthSuccess();
+        } else {
+            console.log('⚠️ 用户未登录');
+            this.redirectToLogin();
+        }
+    }
+
+    // 加载用户的许可证
+    async loadUserLicense() {
+        const { data, error } = await supabase
+            .from('user_licenses')
+            .select('*')
+            .eq('user_id', this.currentUser.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (error) {
+            console.error('加载许可证失败:', error);
+            return;
+        }
+
+        if (data && data.length > 0) {
+            this.currentLicense = data[0];
+            console.log('🔑 当前许可证:', this.currentLicense.plan_type);
+            
+            // 如果是免费版，添加水印或功能限制
+            if (this.currentLicense.plan_type === 'free') {
+                this.applyFreeTierRestrictions();
+            }
+        }
+    }
+
+    // 应用免费版限制
+    applyFreeTierRestrictions() {
+        // 示例：在页面上添加水印
+        const watermark = document.createElement('div');
+        watermark.innerText = '免费试用版 - 升级解锁全部功能';
+        watermark.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: rgba(255, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 9999;
+        `;
+        document.body.appendChild(watermark);
+
+        // 你可以在这里添加更多免费版限制，比如：
+        // - 限制计算次数
+        // - 禁用某些高级按钮
+        // - 在保存数据时弹出升级提示
+    }
+
+    // 保存数据到云端
+    async saveDataToCloud(dataToSave) {
+        if (!this.currentUser) {
+            alert('请先登录以保存数据！');
+            return false;
+        }
+
+        const { error } = await supabase
+            .from('user_data')
+            .insert([
+                {
+                    user_id: this.currentUser.id,
+                    data: dataToSave,
+                    device_id: this.getDeviceId()
+                }
+            ]);
+
+        if (error) {
+            console.error('保存失败:', error);
+            alert('数据保存失败，请检查网络');
+            return false;
+        }
+
+        console.log('💾 数据已保存到云端');
+        return true;
+    }
+
+    // 从云端加载数据
+    async loadDataFromCloud() {
+        if (!this.currentUser) {
+            return null;
+        }
+
+        const { data, error } = await supabase
+            .from('user_data')
+            .select('data, created_at')
+            .eq('user_id', this.currentUser.id)
+            .order('created_at', { ascending: false })
+            .limit(1); // 只加载最新的记录
+
+        if (error) {
+            console.error('加载失败:', error);
+            return null;
+        }
+
+        if (data && data.length > 0) {
+            console.log('📥 从云端加载了数据');
+            return data[0].data;
+        }
+
+        return null;
+    }
+
+    // 获取设备ID（简单实现）
+    getDeviceId() {
+        let deviceId = localStorage.getItem('device_id');
+        if (!deviceId) {
+            deviceId = 'device-' + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('device_id', deviceId);
+        }
+        return deviceId;
+    }
+
+    // 登录成功后的回调
+    onAuthSuccess() {
+        // 隐藏登录页面，显示主应用
+        document.getElementById('login-container')?.style.display = 'none';
+        document.getElementById('main-app')?.style.display = 'block';
+
+        // 自动加载云端数据
+        this.loadDataFromCloud().then(savedData => {
+            if (savedData) {
+                // 假设你有一个函数叫 `restoreAppState` 来恢复应用状态
+                if (typeof window.restoreAppState === 'function') {
+                    window.restoreAppState(savedData);
+                } else {
+                    console.log('Loaded data:', savedData);
+                    // 你可以在这里直接操作你的应用状态
+                }
+            }
+        });
+    }
+
+    // 重定向到登录页
+    redirectToLogin() {
+        window.location.href = 'login.html';
+    }
+
+    // 登出
+    async signOut() {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('登出失败:', error);
+        } else {
+            window.location.href = 'login.html';
+        }
+    }
+}
+
+// 初始化云端管理器
+const cloudManager = new CloudManager();
+
+// 在你的应用初始化时调用
+async function initApp() {
+    await cloudManager.init();
+
+    // ========== 你的原有初始化代码 ==========
+    // ... (这里是你原有的初始化逻辑)
+    // ========== 你的原有初始化代码 ==========
+
+    // 重写你原有的“保存”按钮点击事件，改为保存到云端
+    const saveButton = document.getElementById('save-button'); // 请替换为你的实际按钮ID
+    if (saveButton) {
+        saveButton.addEventListener('click', async () => {
+            // 假设你有一个函数 `getCurrentAppState` 来获取当前应用状态
+            const currentData = typeof window.getCurrentAppState === 'function' 
+                ? window.getCurrentAppState() 
+                : { timestamp: new Date().toISOString(), message: '手动保存' };
+
+            await cloudManager.saveDataToCloud(currentData);
+        });
+    }
+}
+
+// 启动应用
+initApp();
+
+// 将 cloudManager 挂载到全局，方便调试
+window.cloudManager = cloudManager;
