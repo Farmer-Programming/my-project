@@ -848,46 +848,46 @@ function handleClick(typeLabel) {
   calculateFlowTotal();
 }
 
+function exportLedgerData() {
+  // 让用户选择导出格式
+  const choice = prompt("选择导出格式: 输入 'csv' 或 'json'", "csv");
 
-  function exportLedgerData() {
-  const rows = Array.from(ledgerBody.querySelectorAll("tr"));
-  if (rows.length === 0) {
-    alert("账本为空，无法导出！");
-    return;
-  }
-
-  // 构建数据数组
+  // 获取表格数据
+  const rows = document.querySelectorAll(".ledger tr");
   const data = [];
-  const headers = ["行号", "盈亏", "下注", "结果", "状态"];
-  data.push(headers);
 
   rows.forEach(row => {
-    const cells = Array.from(row.cells).map(cell => {
-      // 提取文本内容，去除 HTML 标签
-      const div = document.createElement("div");
-      div.innerHTML = cell.innerHTML || cell.textContent;
-      return div.textContent.trim().replace(/\s+/g, " ");
-    });
-    data.push(cells);
+    const cells = row.querySelectorAll("td");
+    const rowData = [];
+    cells.forEach(cell => rowData.push(cell.innerText));
+    if (rowData.length > 0) {
+      data.push(rowData);
+    }
   });
 
-  // 获取时间戳用于文件名
-  const now = new Date();
-  const timestamp = now.getFullYear() +
-    (now.getMonth()+1).toString().padStart(2, '0') +
-    now.getDate().toString().padStart(2, '0') +
-    "-" +
-    now.getHours().toString().padStart(2, '0') +
-    now.getMinutes().toString().padStart(2, '0') +
-    now.getSeconds().toString().padStart(2, '0');
+  if (choice === "json") {
+    // 导出 JSON
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
 
-  // 选择格式（可扩展）
-  const format = "csv"; // 默认 csv，未来可改为用户选择
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ledger.json";
+    a.click();
+    URL.revokeObjectURL(url);
 
-  if (format === "csv") {
-    exportToCSV(data, `账本记录-${timestamp}.csv`);
-  } else if (format === "json") {
-    exportToJSON(data, `账本记录-${timestamp}.json`);
+  } else {
+    // 默认导出 CSV
+    const csv = data.map(row => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ledger.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
 
@@ -934,21 +934,6 @@ function exportToJSON(data, filename) {
   console.log("已导出 JSON 文件：", filename);
 }  
 
-// 修改 exportLedgerData 开头：
-function exportLedgerData() {
-  const choice = prompt(
-    "选择导出格式：\n1 - CSV（推荐，可用Excel打开）\n2 - JSON（结构化数据）\n\n输入 1 或 2，直接回车默认为 CSV",
-    "1"
-  );
-
-  let format = "csv";
-  if (choice === "2") format = "json";
-  else if (choice !== null && choice !== "" && choice !== "1") {
-    alert("无效选择，使用默认格式 CSV");
-  }
-
-  // 后续同上...
-} 
 
   // ✅ 修改3：移除 bind()，全部使用 addEventListener
   document.getElementById("winB")?.addEventListener("click", () => handleClick("WINB"));
