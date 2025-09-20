@@ -1,120 +1,100 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>烟尘道统计分析系统</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 引入 Manifest 文件 -->
-    <link rel="manifest" href="manifest.json">
-    <!-- 设置主题颜色 -->
-    <meta name="theme-color" content="#317EFB">
-    <!-- 移动设备友好 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>烟尘道统计分析系统</title>
+
+  <!-- Supabase SDK (UMD 版本，提供全局 supabase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- 主题颜色 -->
+  <meta name="theme-color" content="#317EFB">
+
+  <!-- 移动设备友好 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- 样式 -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
-<!-- 初始化 Supabase 并显示主应用 -->
-<script>
-    // 第一步：立即初始化 Supabase 客户端
-    const supabase = window.supabase.createClient(
-        'https://gboujpgswtpyftlakvsm.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdib3VqcGdzd3RweWZ0bGFrdnNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNjU4MjYsImV4cCI6MjA3Mzg0MTgyNn0.JacF3xi3xzqThgBCk7xVlKGVipBPiDCIbVgA5GZB7Zs'
-    );
-
-    // 第二步：延迟执行，确保 DOM 和 Supabase 都已准备就绪
-    document.addEventListener('DOMContentLoaded', async function() {
-        setTimeout(async () => {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    console.log('✅ 用户已登录，显示主应用');
-                    document.getElementById('main-app').style.display = 'block';
-                } else {
-                    console.log('⚠️ 用户未登录，跳转到登录页');
-                    window.location.href = 'login.html';
-                }
-            } catch (error) {
-                console.error('❌ 检查登录状态失败:', error);
-                window.location.href = 'login.html';
-            }
-        }, 1000); // 延迟1秒，确保万无一失
-    });
-</script>
-
 <body>
-    <!-- 安装按钮 -->
-    <button id="installBtn" style="display:none;">📲 安装应用</button>
+  <!-- 安装按钮 -->
+  <button id="installBtn" style="display:none;">📲 安装应用</button>
 
-    <!-- 主应用容器（初始隐藏，登录后由 app-with-cloud.js 显示） -->
-    <div id="main-app" style="display: none;">
-        <div class="chart-container">
-            <canvas id="trendChart"></canvas>
-        </div>
-
-        <div class="data-grid">
-            <input id="input1" type="text" placeholder="注入本金"> 
-            <input id="input2" type="text" placeholder="初始注码"> 
-            <input id="input3" type="text" placeholder="最低注码"> 
-            <input id="input4" type="text" placeholder="加减单位"> 
-            <input id="input5" type="text" placeholder="期望盈利">
-            <input id="input6" type="text" placeholder="下注方向">
-            <input id="input7" type="text" placeholder="下注注码"> 
-            <input id="input8" type="text" placeholder="加到1.06%">
-            <input id="stat-total-hands" type="text" placeholder="总体手数" readonly>
-            <input id="stat-win-hands" type="text" placeholder="总体胜手" readonly> 
-            <input id="stat-net-win" type="text" placeholder="总体净胜" readonly> 
-            <input id="stat-win-rate" type="text" placeholder="总体胜率" readonly> 
-            <input id="stat-total-profit" type="text" placeholder="总体盈利" readonly> 
-            <input id="stat-average-win" type="text" placeholder="总体平均赢" readonly>
-            <input id="stat-goal-complete" type="text" placeholder="完成总体期望" readonly> 
-            <input id="stat-round-hole" type="text" placeholder="总体码洞" readonly>
-            <input id="round-total-hands" type="text" placeholder="回合手数" readonly>
-            <input id="round-win-hands" type="text" placeholder="回合胜手" readonly> 
-            <input id="round-net-win" type="text" placeholder="回合净胜" readonly>
-            <input id="round-win-rate" type="text" placeholder="回合胜率" readonly>
-            <input id="round-total-profit" type="text" placeholder="回合盈利" readonly>
-            <input id="round-average-win" type="text" placeholder="回合平均赢" readonly>
-            <input id="round-goal-complete" type="text" placeholder="完成回合期望" readonly>
-            <input id="round-hole" type="text" placeholder="回合码洞" readonly>
-            <input id="sys-flow-total" type="text" placeholder="流水总额" readonly>
-            <input id="sys-current-fund" type="text" placeholder="当前资金" readonly>
-            <input id="sys-max-loss-capital" type="text" placeholder="最大消耗本金" readonly>
-            <input id="sys-average-win" type="text" placeholder="单手均利" readonly>
-            <input id="sys-max-netwin" type="text" placeholder="最大净胜" readonly>
-            <input id="sys-min-netwin" type="text" placeholder="最小净胜" readonly>
-            <input id="sys-total-forecast" type="text" placeholder="总体预知" readonly>
-            <input id="sys-round-forecast" type="text" placeholder="回合预知" readonly>
-        </div>
-
-        <div class="button-grid">
-            <button id="deleteData">删除数据</button>
-            <button id="recordHistory">记录历史</button>
-            <button id="toggleMode">接入AI</button>
-            <button id="recordRewrite">记录重写</button>
-            <button id="resetFlow">重置流水</button>
-            <button id="restartSystem">重启系统</button>
-            <button id="temporaryView">临时查看</button>
-            <button id="randomDirection">随机方向</button>
-            <button id="winB">WINB</button>
-            <button id="winP">WINP</button>
-            <button id="losB">LOSB</button>
-            <button id="losP">LOSP</button>
-        </div>
-
-        <div class="ledger-container">
-            <table class="ledger">
-                <tbody>
-                    <tr class="frozen-row"><td colspan="5"></td></tr>
-                </tbody>
-            </table>
-        </div>
+  <!-- 主应用容器（初始隐藏，登录后由 app-with-cloud.js 显示） -->
+  <div id="main-app" style="display: none;">
+    <div class="chart-container">
+      <canvas id="trendChart"></canvas>
     </div>
 
-    <!-- 加载核心逻辑 -->
-    <script type="module" src="./app-with-cloud.js"></script>
+    <div class="data-grid">
+      <input id="input1" type="text" placeholder="注入本金"> 
+      <input id="input2" type="text" placeholder="初始注码"> 
+      <input id="input3" type="text" placeholder="最低注码"> 
+      <input id="input4" type="text" placeholder="加减单位"> 
+      <input id="input5" type="text" placeholder="期望盈利">
+      <input id="input6" type="text" placeholder="下注方向">
+      <input id="input7" type="text" placeholder="下注注码"> 
+      <input id="input8" type="text" placeholder="加到1.06%">
+      <input id="stat-total-hands" type="text" placeholder="总体手数" readonly>
+      <input id="stat-win-hands" type="text" placeholder="总体胜手" readonly> 
+      <input id="stat-net-win" type="text" placeholder="总体净胜" readonly> 
+      <input id="stat-win-rate" type="text" placeholder="总体胜率" readonly> 
+      <input id="stat-total-profit" type="text" placeholder="总体盈利" readonly> 
+      <input id="stat-average-win" type="text" placeholder="总体平均赢" readonly>
+      <input id="stat-goal-complete" type="text" placeholder="完成总体期望" readonly> 
+      <input id="stat-round-hole" type="text" placeholder="总体码洞" readonly>
+      <input id="round-total-hands" type="text" placeholder="回合手数" readonly>
+      <input id="round-win-hands" type="text" placeholder="回合胜手" readonly> 
+      <input id="round-net-win" type="text" placeholder="回合净胜" readonly>
+      <input id="round-win-rate" type="text" placeholder="回合胜率" readonly>
+      <input id="round-total-profit" type="text" placeholder="回合盈利" readonly>
+      <input id="round-average-win" type="text" placeholder="回合平均赢" readonly>
+      <input id="round-goal-complete" type="text" placeholder="完成回合期望" readonly>
+      <input id="round-hole" type="text" placeholder="回合码洞" readonly>
+      <input id="sys-flow-total" type="text" placeholder="流水总额" readonly>
+      <input id="sys-current-fund" type="text" placeholder="当前资金" readonly>
+      <input id="sys-max-loss-capital" type="text" placeholder="最大消耗本金" readonly>
+      <input id="sys-average-win" type="text" placeholder="单手均利" readonly>
+      <input id="sys-max-netwin" type="text" placeholder="最大净胜" readonly>
+      <input id="sys-min-netwin" type="text" placeholder="最小净胜" readonly>
+      <input id="sys-total-forecast" type="text" placeholder="总体预知" readonly>
+      <input id="sys-round-forecast" type="text" placeholder="回合预知" readonly>
+    </div>
+
+    <div class="button-grid">
+      <button id="deleteData">删除数据</button>
+      <button id="recordHistory">记录历史</button>
+      <button id="toggleMode">接入AI</button>
+      <button id="recordRewrite">记录重写</button>
+      <button id="resetFlow">重置流水</button>
+      <button id="restartSystem">重启系统</button>
+      <button id="temporaryView">临时查看</button>
+      <button id="randomDirection">随机方向</button>
+      <button id="winB">WINB</button>
+      <button id="winP">WINP</button>
+      <button id="losB">LOSB</button>
+      <button id="losP">LOSP</button>
+    </div>
+
+    <div class="ledger-container">
+      <table class="ledger">
+        <tbody>
+          <tr class="frozen-row"><td colspan="5"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 加载核心逻辑 -->
+  <script type="module" src="./app-with-cloud.js"></script>
 </body>
 </html>

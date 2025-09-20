@@ -1254,20 +1254,20 @@ class CloudManager {
         });
     }
 
-    // 重定向到登录页
-    redirectToLogin() {
-        window.location.href = 'login.html';
-    }
+// 重定向到登录页
+redirectToLogin() {
+    window.location.href = location.origin + '/my-project/login.html';
+}
 
-    // 登出
-    async signOut() {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('登出失败:', error);
-        } else {
-            window.location.href = 'login.html';
-        }
+// 登出
+async signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        console.error('登出失败:', error);
+    } else {
+        window.location.href = location.origin + '/my-project/login.html';
     }
+}
 }
 
 // 初始化云端管理器
