@@ -1219,25 +1219,26 @@ class CloudManager {
         return deviceId;
     }
 
-    // 登录成功后的回调
-    onAuthSuccess() {
-        // 隐藏登录页面，显示主应用
-        document.getElementById('login-container')?.style.display = 'none';
-        document.getElementById('main-app')?.style.display = 'block';
+  // 登录成功后的回调
+onAuthSuccess() {
+    // 隐藏登录页面，显示主应用
+    const loginContainer = document.getElementById('login-container');
+    if (loginContainer) loginContainer.style.display = 'none';
 
-        // 自动加载云端数据
-        this.loadDataFromCloud().then(savedData => {
-            if (savedData) {
-                // 假设你有一个函数叫 `restoreAppState` 来恢复应用状态
-                if (typeof window.restoreAppState === 'function') {
-                    window.restoreAppState(savedData);
-                } else {
-                    console.log('Loaded data:', savedData);
-                    // 你可以在这里直接操作你的应用状态
-                }
+    const mainApp = document.getElementById('main-app');
+    if (mainApp) mainApp.style.display = 'block';
+
+    // 自动加载云端数据
+    this.loadDataFromCloud().then(savedData => {
+        if (savedData) {
+            if (typeof window.restoreAppState === 'function') {
+                window.restoreAppState(savedData);
+            } else {
+                console.log('Loaded data:', savedData);
             }
-        });
-    }
+        }
+    });
+}
 
 // 重定向到登录页
 redirectToLogin() {
